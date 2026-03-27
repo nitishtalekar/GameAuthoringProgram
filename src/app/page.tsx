@@ -81,6 +81,20 @@ export default function Home() {
           Game Authoring Pipeline
         </Typography>
 
+        {/* Sample prompt */}
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          sx={{ cursor: "pointer", "&:hover": { color: "text.primary" } }}
+          onClick={() =>
+            setPrompt(
+              "A knight patrols a dungeon. Fire traps line the corridor and damage anyone who walks through. A healing potion sits on a pedestal and restores the knight's health when collected. A locked door blocks the exit, and a key hidden in a chest unlocks it."
+            )
+          }
+        >
+          Sample: &quot;A knight patrols a dungeon. Fire traps line the corridor and damage anyone who walks through. A healing potion sits on a pedestal and restores the knight&apos;s health when collected. A locked door blocks the exit, and a key hidden in a chest unlocks it.&quot;
+        </Typography>
+
         {/* Prompt input */}
         <TextField
           label="Prompt"

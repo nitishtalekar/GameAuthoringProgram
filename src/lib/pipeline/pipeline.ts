@@ -11,16 +11,23 @@ export interface PipelineStep {
 export const pipeline: PipelineStep[] = [
   {
     id: 1,
-    label: "Step 1: Extract Nouns & Verbs",
-    agentKey: "nounVerbExtractor",
+    label: "Step 1: SVO Analysis",
+    agentKey: "svoAnalyzer",
     inputFields: [],
-    outputField: "nounVerbList",
+    outputField: "svoAnalysis",
   },
   {
     id: 2,
-    label: "Step 2: Generate Sentences",
-    agentKey: "sentenceGenerator",
-    inputFields: ["nounVerbList"],
-    outputField: "sentences",
+    label: "Step 2: Interaction Attributes",
+    agentKey: "interactionAttributeSelector",
+    inputFields: ["svoAnalysis"],
+    outputField: "interactionAttributes",
+  },
+  {
+    id: 3,
+    label: "Step 3: Individual Attributes",
+    agentKey: "individualAttributeSelector",
+    inputFields: ["svoAnalysis"],
+    outputField: "individualAttributes",
   },
 ];
