@@ -10,8 +10,8 @@ import {
   Typography,
   Paper,
 } from "@mui/material";
-import { pipeline } from "@/lib/pipeline";
-import type { GameState } from "@/app/api/pipeline/route";
+import { pipeline } from "@/lib/pipeline/pipeline";
+import type { GameState } from "@/lib/gameState";
 
 const initialGameState: GameState = {
   prompt: "",

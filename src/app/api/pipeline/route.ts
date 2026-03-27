@@ -1,16 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { buildGraph, runGraph } from "@/lib/graph";
 import { human, getLastMessageContent } from "@/utils/messages";
-import { pipeline } from "@/lib/pipeline";
-import { pipelineAgents } from "@/lib/pipeline_agents";
+import { pipeline } from "@/lib/pipeline/pipeline";
+import { pipelineAgents } from "@/lib/pipeline/pipeline_agents";
+import type { GameState } from "@/lib/gameState";
 
 export const runtime = "nodejs";
 
-export interface GameState {
-  prompt: string;
-  completedSteps: number[];
-  [key: string]: unknown;
-}
+// Re-export so page.tsx can import the type from here if preferred,
+// but the canonical definition lives in @/lib/gameState.
+export type { GameState };
 
 function parseJson<T>(raw: string, agentLabel: string): T {
   const cleaned = raw
@@ -47,9 +46,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Validate required input fields
     for (const field of stepDef.inputFields) {
-      if (state[field] == null) {
+      if (state[field as keyof GameState] == null) {
         return NextResponse.json(
           { error: `Step ${step} requires state.${field} from a previous step.` },
           { status: 400 }
@@ -72,11 +70,10 @@ export async function POST(req: NextRequest) {
       entryPoint: stepDef.agentKey,
     });
 
-    // Build the human message: always include the prompt, plus any required prior state fields
     const contextParts: string[] = [`User prompt: ${state.prompt}`];
     for (const field of stepDef.inputFields) {
       contextParts.push(
-        `${field}:\n${JSON.stringify(state[field], null, 2)}`
+        `${field}:\n${JSON.stringify(state[field as keyof GameState], null, 2)}`
       );
     }
     const humanMsg = contextParts.join("\n\n");
