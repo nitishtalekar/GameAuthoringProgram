@@ -43,6 +43,11 @@ export function buildRecipeSelectorAgent(): NodeFunction {
   });
 }
 
+export function buildGameJsonBuilderAgent(): NodeFunction {
+  const llm = createOpenAIModel({ temperature: 0.2 });
+  return buildAgentNode(llm, { systemPrompt: prompts.gameJsonBuilder() });
+}
+
 export const pipelineAgents: Record<string, () => NodeFunction> = {
   nounVerbExtractor: buildNounVerbExtractorAgent,
   sentenceGenerator: buildSentenceGeneratorAgent,
@@ -50,4 +55,5 @@ export const pipelineAgents: Record<string, () => NodeFunction> = {
   interactionAttributeSelector: buildInteractionAttributeSelectorAgent,
   individualAttributeSelector: buildIndividualAttributeSelectorAgent,
   recipeSelector: buildRecipeSelectorAgent,
+  gameJsonBuilder: buildGameJsonBuilderAgent,
 };

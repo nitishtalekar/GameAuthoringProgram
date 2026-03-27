@@ -37,4 +37,11 @@ export const pipeline: PipelineStep[] = [
     inputFields: ["interactionAttributes", "individualAttributes"],
     outputField: "recipeSelection",
   },
+  {
+    id: 5,
+    label: "Step 5: Game JSON Builder",
+    agentKey: "gameJsonBuilder",
+    inputFields: ["interactionAttributes", "individualAttributes", "recipeSelection"],
+    outputField: "gameJSON",
+  },
 ];
