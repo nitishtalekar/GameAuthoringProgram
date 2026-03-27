@@ -2,14 +2,17 @@
 
 import { useState } from "react";
 import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
   Box,
   Button,
   CircularProgress,
   Stack,
   TextField,
   Typography,
-  Paper,
 } from "@mui/material";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { pipeline } from "@/lib/pipeline/pipeline";
 import type { GameState } from "@/lib/gameState";
 
@@ -21,7 +24,9 @@ const initialGameState: GameState = {
 export default function Home() {
   const [prompt, setPrompt] = useState("");
   const [gameState, setGameState] = useState<GameState>(initialGameState);
-  const [lastResponse, setLastResponse] = useState<unknown>(null);
+  const [stepHistory, setStepHistory] = useState<
+    { stepId: number; label: string; response: unknown; expanded: boolean }[]
+  >([]);
   const [loading, setLoading] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -48,10 +53,13 @@ export default function Home() {
       const newState = data.state!;
       setGameState(newState);
 
-      // Show the output field for this step
       const stepDef = pipeline.find((s) => s.id === stepId);
       if (stepDef) {
-        setLastResponse(newState[stepDef.outputField] ?? null);
+        const response = newState[stepDef.outputField] ?? null;
+        setStepHistory((prev) => [
+          ...prev.map((e) => ({ ...e, expanded: false })),
+          { stepId, label: stepDef.label, response, expanded: true },
+        ]);
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : "Request failed");
@@ -110,46 +118,60 @@ export default function Home() {
           </Typography>
         )}
 
-        {/* Last step response */}
-        {lastResponse !== null && (
-          <Paper variant="outlined" sx={{ p: 2 }}>
-            <Typography variant="subtitle2" gutterBottom>
-              Last Step Response
-            </Typography>
+        {/* Step response history */}
+        {stepHistory.map((entry, i) => (
+          <Accordion
+            key={i}
+            expanded={entry.expanded}
+            onChange={(_, open) =>
+              setStepHistory((prev) =>
+                prev.map((e, j) => (j === i ? { ...e, expanded: open } : e))
+              )
+            }
+          >
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography variant="subtitle2">
+                {entry.label} — response #{i + 1}
+              </Typography>
+            </AccordionSummary>
+            <AccordionDetails sx={{ p: 1.5 }}>
+              <Box
+                component="pre"
+                sx={{
+                  m: 0,
+                  fontFamily: "var(--font-geist-mono, monospace)",
+                  fontSize: 13,
+                  whiteSpace: "pre-wrap",
+                  wordBreak: "break-word",
+                }}
+              >
+                {JSON.stringify(entry.response, null, 2)}
+              </Box>
+            </AccordionDetails>
+          </Accordion>
+        ))}
+
+        {/* GameState — collapsible */}
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="subtitle2">Game State</Typography>
+          </AccordionSummary>
+          <AccordionDetails sx={{ p: 1.5 }}>
             <Box
               component="pre"
               sx={{
                 m: 0,
                 fontFamily: "var(--font-geist-mono, monospace)",
-                fontSize: 13,
+                fontSize: 12,
                 whiteSpace: "pre-wrap",
                 wordBreak: "break-word",
+                color: "text.secondary",
               }}
             >
-              {JSON.stringify(lastResponse, null, 2)}
+              {JSON.stringify({ ...gameState, prompt }, null, 2)}
             </Box>
-          </Paper>
-        )}
-
-        {/* GameState — always visible */}
-        <Paper variant="outlined" sx={{ p: 2 }}>
-          <Typography variant="subtitle2" gutterBottom>
-            Game State
-          </Typography>
-          <Box
-            component="pre"
-            sx={{
-              m: 0,
-              fontFamily: "var(--font-geist-mono, monospace)",
-              fontSize: 12,
-              whiteSpace: "pre-wrap",
-              wordBreak: "break-word",
-              color: "text.secondary",
-            }}
-          >
-            {JSON.stringify({ ...gameState, prompt }, null, 2)}
-          </Box>
-        </Paper>
+          </AccordionDetails>
+        </Accordion>
       </Stack>
     </Box>
   );
