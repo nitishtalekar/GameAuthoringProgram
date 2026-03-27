@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   Accordion,
   AccordionDetails,
@@ -13,6 +14,7 @@ import {
   Typography,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import { pipeline } from "@/lib/pipeline/pipeline";
 import type { GameState } from "@/lib/gameState";
 
@@ -22,6 +24,7 @@ const initialGameState: GameState = {
 };
 
 export default function Home() {
+  const router = useRouter();
   const [prompt, setPrompt] = useState("");
   const [gameState, setGameState] = useState<GameState>(initialGameState);
   const [stepHistory, setStepHistory] = useState<
@@ -124,6 +127,22 @@ export default function Home() {
             </Button>
           ))}
         </Box>
+
+        {/* Play button — shown once gameJSON is ready */}
+        {gameState.gameJSON && (
+          <Button
+            variant="contained"
+            color="success"
+            size="large"
+            startIcon={<PlayArrowIcon />}
+            onClick={() => {
+              const encoded = btoa(JSON.stringify(gameState.gameJSON));
+              router.push(`/play?game=${encoded}`);
+            }}
+          >
+            Play Game
+          </Button>
+        )}
 
         {/* Error */}
         {error && (
