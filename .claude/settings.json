@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cat /c/Users/NitishTalekar/Desktop/Projects/ResearchProjects/GameAuthoringProgram/src/app/test/*.ts)",
+      "Bash(grep -E \"\\\\.md$\")"
+    ]
+  }
+}
