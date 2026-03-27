@@ -76,4 +76,89 @@ OUTPUT: Respond ONLY with valid JSON matching this exact schema — no markdown,
 
 Include every entity as a top-level key. Only include attributes that apply — omit attributes that do not fit.`;
   },
+
+  recipeSelector: (
+    winConditions: { key: string; description: string; conditionType: string; example: string }[],
+    loseConditions: { key: string; description: string; conditionType: string; example: string }[],
+    layouts: {
+      key: string;
+      description: string;
+      movement: string;
+      scrolling: boolean;
+      spawnZones: { id: string; label: string; x: number; y: number; role: string }[];
+      example: string;
+    }[]
+  ) => {
+    const winText = winConditions
+      .map((c) => `- ${c.key} [${c.conditionType}]: ${c.description}\n  Example: ${c.example}`)
+      .join("\n");
+    const loseText = loseConditions
+      .map((c) => `- ${c.key} [${c.conditionType}]: ${c.description}\n  Example: ${c.example}`)
+      .join("\n");
+    const layoutText = layouts
+      .map(
+        (l) =>
+          `- ${l.key}: ${l.description} movement=${l.movement}, scrolling=${l.scrolling}\n  Example: "${l.example}"`
+      )
+      .join("\n");
+
+    return `You are a game authoring assistant. Your job is to select the win condition, lose condition, and layout recipe that best fit a game described by its entity attributes.
+
+You will receive:
+- interactionAttributes: map of entity → { attributeKey: targetEntity | null }
+- individualAttributes: map of entity → { attributeKey: true }
+
+Use these to reason about the game's structure, then pick exactly one recipe from each list.
+
+━━━ CONDITION OUTPUT SHAPES ━━━
+
+Each condition recipe is either [property] or [interaction] type. Use the correct shape:
+
+[property] — watches a scalar value on one entity:
+{
+  "name": "recipeKey",
+  "entity": "EntityName",
+  "property": "health" | "count" | "timer",
+  "value": <number>
+}
+
+[interaction] — watches a relationship between two entities:
+{
+  "name": "recipeKey",
+  "entity": "EntityName",
+  "attribute": "interactionAttributeKey",
+  "target": "OtherEntityName"
+}
+
+Rules:
+- "entity", "attribute", and "target" must use exact entity names from the input (preserve casing).
+- For [property] conditions: "value" is always a number (0 for depletion, 0 for timer expiry).
+- For [interaction] conditions: "target" is the entity on the other side of the relationship.
+- Do NOT mix the shapes — a [property] recipe must never have "attribute" or "target", and an [interaction] recipe must never have "property" or "value".
+
+━━━ AVAILABLE WIN CONDITIONS ━━━
+${winText}
+
+━━━ AVAILABLE LOSE CONDITIONS ━━━
+${loseText}
+
+━━━ AVAILABLE LAYOUTS ━━━
+${layoutText}
+
+For the layout, copy its spawnZones exactly as defined — do not alter zone data.
+
+OUTPUT: Respond ONLY with valid JSON — no markdown, no explanation:
+{
+  "win_condition": { <property or interaction shape> },
+  "lose_condition": { <property or interaction shape> },
+  "layout": {
+    "key": "layoutKey",
+    "movement": "horizontal | vertical | both | none",
+    "scrolling": true | false,
+    "spawnZones": [
+      { "id": "zone_id", "label": "Zone Label", "x": 0.0, "y": 0.0, "role": "player | enemy | collectible | goal | hazard | static" }
+    ]
+  }
+}`;
+  },
 };

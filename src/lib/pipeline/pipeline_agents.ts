@@ -5,6 +5,7 @@ import { prompts } from "./pipeline_prompts";
 import { NUMBER_OF_NOUNS } from "@library/constants";
 import { INTERACTION_ATTRIBUTES } from "@library/interaction_attributes";
 import { INDIVIDUAL_ATTRIBUTES } from "@library/individual_attributes";
+import { WIN_CONDITIONS, LOSE_CONDITIONS, LAYOUT_RECIPES } from "@library/recipes";
 
 export function buildNounVerbExtractorAgent(): NodeFunction {
   const llm = createOpenAIModel({ temperature: 0.2 });
@@ -35,10 +36,18 @@ export function buildIndividualAttributeSelectorAgent(): NodeFunction {
   });
 }
 
+export function buildRecipeSelectorAgent(): NodeFunction {
+  const llm = createOpenAIModel({ temperature: 0.2 });
+  return buildAgentNode(llm, {
+    systemPrompt: prompts.recipeSelector(WIN_CONDITIONS, LOSE_CONDITIONS, LAYOUT_RECIPES),
+  });
+}
+
 export const pipelineAgents: Record<string, () => NodeFunction> = {
   nounVerbExtractor: buildNounVerbExtractorAgent,
   sentenceGenerator: buildSentenceGeneratorAgent,
   svoAnalyzer: buildSvoAnalyzerAgent,
   interactionAttributeSelector: buildInteractionAttributeSelectorAgent,
   individualAttributeSelector: buildIndividualAttributeSelectorAgent,
+  recipeSelector: buildRecipeSelectorAgent,
 };

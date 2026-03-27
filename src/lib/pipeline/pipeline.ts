@@ -30,4 +30,11 @@ export const pipeline: PipelineStep[] = [
     inputFields: ["svoAnalysis"],
     outputField: "individualAttributes",
   },
+  {
+    id: 4,
+    label: "Step 4: Recipe Selection",
+    agentKey: "recipeSelector",
+    inputFields: ["interactionAttributes", "individualAttributes"],
+    outputField: "recipeSelection",
+  },
 ];

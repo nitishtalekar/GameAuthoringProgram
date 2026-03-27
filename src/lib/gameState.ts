@@ -34,6 +34,49 @@ export type InteractionAttributeMap = Record<
 // Keys are entity names; values are objects mapping attribute keys to true/false.
 export type IndividualAttributeMap = Record<string, Record<string, boolean>>;
 
+// Step 4 output — selected recipes (win/lose conditions + layout)
+
+// Property-based condition: watches a scalar property on a single entity.
+// e.g. Knight.health === 0
+export interface PropertyCondition {
+  name: string;              // Recipe key, e.g. "playerHealthDepleted"
+  entity: string;            // Entity being watched, e.g. "Knight"
+  property: "health" | "count" | "timer";
+  value: number;             // Threshold that triggers the condition
+}
+
+// Interaction-based condition: watches a relationship between two entities.
+// e.g. Goblin.isDestroyedBy === "Knight"
+export interface InteractionCondition {
+  name: string;              // Recipe key, e.g. "allEnemiesDestroyed"
+  entity: string;            // Entity being watched, e.g. "Goblin"
+  attribute: string;         // Interaction attribute key, e.g. "isDestroyedBy"
+  target: string;            // The other entity involved, e.g. "Knight"
+}
+
+export type GameCondition = PropertyCondition | InteractionCondition;
+
+export interface LayoutSpawnZone {
+  id: string;
+  label: string;
+  x: number;  // Normalised [0,1] from left
+  y: number;  // Normalised [0,1] from top
+  role: "player" | "enemy" | "collectible" | "goal" | "hazard" | "static";
+}
+
+export interface GameLayout {
+  key: string;
+  movement: "horizontal" | "vertical" | "both" | "none";
+  scrolling: boolean;
+  spawnZones: LayoutSpawnZone[];
+}
+
+export interface RecipeSelection {
+  win_condition: GameCondition;
+  lose_condition: GameCondition;
+  layout: GameLayout;
+}
+
 export interface GameState {
   prompt: string;
   completedSteps: number[];
@@ -42,5 +85,6 @@ export interface GameState {
   svoAnalysis?: SvoAnalysis;
   interactionAttributes?: InteractionAttributeMap;
   individualAttributes?: IndividualAttributeMap;
+  recipeSelection?: RecipeSelection;
   [key: string]: unknown;
 }

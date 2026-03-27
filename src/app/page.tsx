@@ -107,7 +107,7 @@ export default function Home() {
         />
 
         {/* Pipeline step buttons */}
-        <Stack direction="row" spacing={2} flexWrap="wrap">
+        <Box sx={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 2 }}>
           {pipeline.map((step) => (
             <Button
               key={step.id}
@@ -123,7 +123,7 @@ export default function Home() {
               {step.label}
             </Button>
           ))}
-        </Stack>
+        </Box>
 
         {/* Error */}
         {error && (

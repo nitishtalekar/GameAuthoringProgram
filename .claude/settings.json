@@ -4,7 +4,8 @@
       "Bash(cat /c/Users/NitishTalekar/Desktop/Projects/ResearchProjects/GameAuthoringProgram/src/app/test/*.ts)",
       "Bash(grep -E \"\\\\.md$\")",
       "Bash(mkdir -p \"c:/Users/NitishTalekar/Desktop/Projects/ResearchProjects/GameAuthoringProgram/src/lib/pipeline\")",
-      "Bash(mkdir -p \"c:/Users/NitishTalekar/Desktop/Projects/ResearchProjects/GameAuthoringProgram/src/lib/library\")"
+      "Bash(mkdir -p \"c:/Users/NitishTalekar/Desktop/Projects/ResearchProjects/GameAuthoringProgram/src/lib/library\")",
+      "Bash(xargs grep:*)"
     ]
   }
 }
