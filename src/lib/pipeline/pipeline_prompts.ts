@@ -2,19 +2,6 @@
 // Edit prompts here; agents import and use them directly.
 
 export const prompts = {
-  nounVerbExtractor: (maxNouns: number) =>
-    `You are a linguistics assistant. Given a text prompt, extract at most ${maxNouns} nouns and all verbs.
-
-OUTPUT: Respond ONLY with valid JSON matching this exact schema — no markdown, no explanation:
-{ "nouns": ["noun1", "noun2", ...], "verbs": ["verb1", "verb2", ...] }`,
-
-  sentenceGenerator: () =>
-    `You are a creative writing assistant. Given a list of nouns and verbs, generate sentences in the pattern: NOUN VERB NOUN.
-Use the provided nouns and verbs to create at least 5 varied sentences.
-
-OUTPUT: Respond ONLY with valid JSON matching this exact schema — no markdown, no explanation:
-{ "sentences": ["Sentence one.", "Sentence two.", ...] }`,
-
   svoAnalyzer: () =>
     `You are a linguistics and semantic analysis assistant. Given a text prompt, perform the following:
 1. Rewrite the prompt as a set of simple subject-verb-object (SVO) sentences that together convey the same meaning as the original. Each sentence must follow the form: SUBJECT VERB OBJECT.
@@ -23,7 +10,8 @@ OUTPUT: Respond ONLY with valid JSON matching this exact schema — no markdown,
 
 Rules:
 - Every original idea in the prompt must be represented in at least one SVO sentence.
-- The entities list must be a set — no duplicates, all lowercase.
+- The entities list must be a set — no duplicates. Each entity must be a single capitalized noun (e.g. "Knight", "Castle", "Arrow") — no articles, no phrases.
+- Verbs must be single words in simple present tense (e.g. "attacks", "collects", "destroys") — no phrases or multi-word verbs.
 - Use the simplest, most concrete nouns and verbs possible.
 
 OUTPUT: Respond ONLY with valid JSON matching this exact schema — no markdown, no explanation:
