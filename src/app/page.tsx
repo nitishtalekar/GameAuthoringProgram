@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import {
   Accordion,
   AccordionDetails,
@@ -9,12 +8,13 @@ import {
   Box,
   Button,
   CircularProgress,
+  Snackbar,
   Stack,
   TextField,
   Typography,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import PlayArrowIcon from "@mui/icons-material/PlayArrow";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import { pipeline } from "@/lib/pipeline/pipeline";
 import type { GameState } from "@/lib/gameState";
 
@@ -24,7 +24,6 @@ const initialGameState: GameState = {
 };
 
 export default function Home() {
-  const router = useRouter();
   const [prompt, setPrompt] = useState("");
   const [gameState, setGameState] = useState<GameState>(initialGameState);
   const [stepHistory, setStepHistory] = useState<
@@ -32,6 +31,7 @@ export default function Home() {
   >([]);
   const [loading, setLoading] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   async function runStep(stepId: number) {
     setLoading(stepId);
@@ -128,21 +128,53 @@ export default function Home() {
           ))}
         </Box>
 
-        {/* Play button — shown once gameJSON is ready */}
+        {/* GameJSON output — shown once gameJSON is ready */}
         {gameState.gameJSON && (
-          <Button
-            variant="contained"
-            color="success"
-            size="large"
-            startIcon={<PlayArrowIcon />}
-            onClick={() => {
-              const encoded = btoa(JSON.stringify(gameState.gameJSON));
-              router.push(`/play?game=${encoded}`);
-            }}
-          >
-            Play Game
-          </Button>
+          <Box>
+            <Typography variant="subtitle2" sx={{ mb: 1 }}>
+              Game JSON Output
+            </Typography>
+            <Box
+              component="pre"
+              sx={{
+                p: 2,
+                bgcolor: "background.paper",
+                border: "1px solid",
+                borderColor: "divider",
+                borderRadius: 1,
+                fontFamily: "var(--font-geist-mono, monospace)",
+                fontSize: 12,
+                whiteSpace: "pre-wrap",
+                wordBreak: "break-word",
+                maxHeight: 400,
+                overflow: "auto",
+              }}
+            >
+              {JSON.stringify(gameState.gameJSON, null, 2)}
+            </Box>
+            <Button
+              variant="outlined"
+              size="small"
+              startIcon={<ContentCopyIcon />}
+              sx={{ mt: 1 }}
+              onClick={() => {
+                navigator.clipboard.writeText(
+                  JSON.stringify(gameState.gameJSON, null, 2)
+                );
+                setCopied(true);
+              }}
+            >
+              Copy JSON
+            </Button>
+          </Box>
         )}
+
+        <Snackbar
+          open={copied}
+          autoHideDuration={2000}
+          onClose={() => setCopied(false)}
+          message="JSON copied to clipboard"
+        />
 
         {/* Error */}
         {error && (

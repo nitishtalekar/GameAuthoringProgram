@@ -29,7 +29,7 @@ OUTPUT: Respond ONLY with valid JSON matching this exact schema — no markdown,
     const listText = attributeList
       .map((a) => `- ${a.key}: ${a.description} (e.g. ${a.example})`)
       .join("\n");
-    return `You are a game authoring assistant. Your job is to convert a text description into a playable game by mapping entity relationships to game mechanics.
+    return `You are a game authoring assistant. Your job is to convert a text description into a playable top-down game by mapping entity relationships to game mechanics.
 
 You will receive:
 - A list of entities present in the scene.
@@ -38,6 +38,8 @@ You will receive:
 For each UNIQUE ENTITY, assign the most appropriate interaction attributes from the list below. An interaction attribute describes how this entity relates to another entity (the target). Assign only the attributes that are genuinely implied by the relations. Set the value to the target entity name (string) if applicable, or null if the attribute applies but has no specific target.
 
 You are building a game representation of a text — choose attributes that best convey the intended meaning and dynamic of the original scene as a game mechanic.
+
+IMPORTANT: Only assign attributes that are game-effective — they must produce a visible gameplay effect (damage, collection, blocking, activation, healing, spawning, destruction, etc.). Do not assign attributes that are merely thematically appropriate but would not change gameplay behavior. Every assigned attribute must translate to a concrete in-game mechanic.
 
 Available interaction attributes:
 ${listText}
@@ -57,13 +59,15 @@ Include every unique entity from the input as a top-level key. Only include attr
     const listText = attributeList
       .map((a) => `- ${a.key}: ${a.description} (e.g. ${a.example})`)
       .join("\n");
-    return `You are a game authoring assistant. Your job is to convert a text description into a playable game by mapping entities to game properties.
+    return `You are a game authoring assistant. Your job is to convert a text description into a playable top-down game by mapping entities to game properties.
 
 You will receive a list of entities present in the scene.
 
-For each entity, assign the most appropriate individual attributes from the list below. Individual attributes describe the entity's own behaviour, physics, and lifecycle — independent of any other entity. Set each applicable attribute to true.
+For each entity, assign the most appropriate individual attributes from the list below. Individual attributes describe the entity's own behaviour and lifecycle — independent of any other entity. Set each applicable attribute to true.
 
-You are building a game representation of a text — choose attributes that best convey what role and behaviour each entity would have in a game that faithfully recreates the described scene.
+You are building a game representation of a text — choose attributes that best convey what role and behaviour each entity would have in a top-down game that faithfully recreates the described scene.
+
+IMPORTANT: Only assign attributes that are game-effective — meaning they will actually influence the entity's behavior or role in gameplay. Do not assign attributes that are purely descriptive or thematic. For example, do not mark an entity as 'isDestructible' unless something in the game actually destroys it; do not mark 'hasHealth' unless something damages it; do not mark 'hasMovement' unless the entity needs to move autonomously.
 
 Available individual attributes:
 ${listText}
@@ -102,11 +106,11 @@ Include every entity as a top-level key. Only include attributes that apply — 
       )
       .join("\n");
 
-    return `You are a game authoring assistant. Your job is to select the win condition, lose condition, and layout recipe that best fit a game described by its entity attributes.
+    return `You are a game authoring assistant. Your job is to select the win condition, lose condition, and layout recipe that best fit a top-down game described by its entity attributes.
 
 You will receive:
-- interactionAttributes: map of entity → { attributeKey: targetEntity | null }
-- individualAttributes: map of entity → { attributeKey: true }
+- attributes.interaction: map of entity → { attributeKey: targetEntity | null }
+- attributes.individual: map of entity → { attributeKey: true }
 
 Use these to reason about the game's structure, then pick exactly one recipe from each list.
 
@@ -162,37 +166,28 @@ OUTPUT: Respond ONLY with valid JSON — no markdown, no explanation:
 }`;
   },
   gameJsonBuilder: () =>
-    `You are a game engine configuration assistant. Your job is to convert structured game attributes and a selected recipe into a complete GameJSON object that can be directly consumed by a Phaser 3 renderer.
+    `You are a game engine configuration assistant. Your job is to convert structured game attributes and a selected recipe into a complete GameJSON object that can be directly consumed by a top-down Phaser 3 renderer.
 
 You will receive:
-- interactionAttributes: map of entity → { attributeKey: targetEntityName | null }
-- individualAttributes: map of entity → { attributeKey: true }
+- attributes.interaction: map of entity → { attributeKey: targetEntityName | null }
+- attributes.individual: map of entity → { attributeKey: true }
 - recipeSelection: { win_condition, lose_condition, layout }
 
-Your task is to produce a GameJSON with the following shape. All numeric values must be realistic for a 2D arcade game rendered on an 800×600 canvas.
+Your task is to produce a GameJSON with the following shape. All numeric values must be realistic for a 2D top-down arcade game rendered on an 800×600 canvas.
 
 ━━━ OUTPUT SCHEMA ━━━
 
 {
   "title": "A short descriptive title inferred from the entities and actions",
-  "world": {
-    "widthPx": 800,
-    "heightPx": 600,
-    "gravityY": <980 if any entity hasGravity, else 0>,
-    "scrolling": <from layout>,
-    "movement": <from layout>,
-    "backgroundColor": "<hex, dark tone matching game mood>"
-  },
   "entities": [
     {
       "id": "<lower_snake_case entity name>",
       "label": "<original entity name>",
       "role": "<player | enemy | collectible | goal | hazard | static>",
       "physics": {
-        "hasGravity": <true if entity has hasGravity individual attribute>,
         "isStatic": <true if entity has isStatic individual attribute>,
         "speed": <px/s — see role defaults below>,
-        "jumpForce": <initial upward velocity px/s if canJump, else 0>
+        "hasMovement": <true if entity has hasMovement individual attribute>
       },
       "appearance": {
         "size": <px — see role defaults below>,
@@ -202,36 +197,50 @@ Your task is to produce a GameJSON with the following shape. All numeric values 
       "lifecycle": {
         "health": <starting HP — see role defaults below>,
         "maxCount": <max simultaneous on screen, -1 = unlimited>,
-        "spawnRate": <instances per second, 0 = spawned once at start>,
-        "spawnZoneId": "<id from layout.spawnZones that matches this entity's role>"
-      },
-      "interactions": [
-        { "target": "<entity id>", "attributeKey": "<e.g. isDestroyedBy>" }
-      ]
+        "spawnRate": <instances per second, 0 = spawned once at start>
+      }
     }
   ],
+  "interactionMatrix": [
+    {
+      "source": "<entity id that is affected>",
+      "target": "<entity id that causes the effect>",
+      "effect": "<interaction attribute key, e.g. isDamagedBy>"
+    }
+  ],
+  "layout": {
+    "widthPx": 800,
+    "heightPx": 600,
+    "scrolling": <from layout recipe>,
+    "movement": <from layout recipe>,
+    "backgroundColor": "<hex, dark tone matching game mood>",
+    "spawnPoints": [
+      { "entityId": "<entity id>", "x": <normalised 0-1>, "y": <normalised 0-1> }
+    ]
+  },
   "winCondition": <copy exactly from recipeSelection.win_condition>,
   "loseCondition": <copy exactly from recipeSelection.lose_condition>
 }
 
 ━━━ ROLE DEFAULTS (adjust based on context) ━━━
 
-player:      speed=200, jumpForce=400, size=40, health=3, maxCount=1, spawnRate=0, shape=rectangle
-enemy:       speed=80,  jumpForce=0,   size=36, health=1, maxCount=5, spawnRate=0.5, shape=rectangle
-collectible: speed=0,   jumpForce=0,   size=20, health=0, maxCount=10, spawnRate=0, shape=circle
-goal:        speed=0,   jumpForce=0,   size=48, health=0, maxCount=1, spawnRate=0, shape=rectangle
-hazard:      speed=0,   jumpForce=0,   size=32, health=0, maxCount=-1, spawnRate=0, shape=rectangle
-static:      speed=0,   jumpForce=0,   size=64, health=0, maxCount=-1, spawnRate=0, shape=rectangle
+player:      speed=200, hasMovement=false, size=40, health=3, maxCount=1, spawnRate=0, shape=rectangle
+enemy:       speed=80,  hasMovement=true,  size=36, health=1, maxCount=5, spawnRate=0.5, shape=rectangle
+collectible: speed=0,   hasMovement=false, size=20, health=0, maxCount=10, spawnRate=0, shape=circle
+goal:        speed=0,   hasMovement=false, size=48, health=0, maxCount=1, spawnRate=0, shape=rectangle
+hazard:      speed=0,   hasMovement=false, size=32, health=0, maxCount=-1, spawnRate=0, shape=rectangle
+static:      speed=0,   hasMovement=false, size=64, health=0, maxCount=-1, spawnRate=0, shape=rectangle
 
 ━━━ RULES ━━━
+- This is a top-down game. There is no gravity, no jumping, and no platformer mechanics.
 - Assign each entity's role from its individualAttributes: isPlayer→player, isEnemy→enemy, isCollectible→collectible, isHazard→hazard, isStatic→static. If an entity has isActivatedBy pointing to the player, it is likely a goal.
-- spawnZoneId must reference a zone id from the layout whose role matches the entity's role. If no exact role match exists, pick the closest zone.
-- interactions: convert the interactionAttributes map into a flat list of { target, attributeKey } objects. Use entity ids (lower_snake_case).
+- interactionMatrix: convert the attributes.interaction map into a flat list of { source, target, effect } objects. "source" is the entity being affected, "target" is the entity causing the effect. Use entity ids (lower_snake_case).
+- layout.spawnPoints: assign one spawn point per entity. Use the layout recipe's spawnZones as a guide — match each entity's role to the closest zone and use its (x, y) coordinates. Every entity must have a spawn point.
 - health: entities with hasHealth get health ≥ 1. If hasHealth is absent and the entity is not a player, health = 0 (one-hit destroy).
 - For enemies with isDestroyedBy pointing to the player, increase speed slightly to add challenge.
-- gravityY = 980 when at least one entity has hasGravity; gravityY = 0 for top-down/shooter layouts.
 - backgroundColor should suit the game's theme (dungeon = dark, space = near-black, forest = dark green, etc.)
-- Do NOT add entities that are not in the input. Do NOT omit any entity from the input.
+- Only include entities that have at least one game-effective attribute or participate in at least one interaction. If an entity has no attributes and no interactions, omit it from the output.
+- Do NOT add entities that are not in the input.
 
 OUTPUT: Respond ONLY with valid JSON matching the schema above — no markdown, no explanation.`,
 };

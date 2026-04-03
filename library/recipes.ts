@@ -132,67 +132,66 @@ export interface LayoutRecipe {
 
 export const LAYOUT_RECIPES: LayoutRecipe[] = [
   {
-    key: "sidescroller",
-    description:
-      "Left-to-right scrolling layout. Player starts on the left, goal on the far right. " +
-      "Use when entities have gravity, can jump, and movement is horizontal.",
-    movement: "horizontal",
-    scrolling: true,
-    spawnZones: [
-      { id: "player_start", label: "Player Start", x: 0.1,  y: 0.8,  role: "player" },
-      { id: "enemy_zone",   label: "Enemy Zone",   x: 0.7,  y: 0.8,  role: "enemy" },
-      { id: "goal",         label: "Goal",         x: 0.95, y: 0.8,  role: "goal" },
-      { id: "collectible",  label: "Collectibles", x: 0.5,  y: 0.6,  role: "collectible" },
-      { id: "floor",        label: "Floor",        x: 0.5,  y: 1.0,  role: "static" },
-    ],
-    example: "A knight runs right, jumps over spikes, and reaches a castle gate.",
-  },
-  {
     key: "topdown_arena",
     description:
       "Fixed single-screen top-down view. Player in the centre, enemies and collectibles scattered around. " +
-      "Use when there is no gravity and the player moves in all directions.",
+      "Use for combat or collection games on a single screen with no scrolling.",
     movement: "both",
     scrolling: false,
     spawnZones: [
-      { id: "player_start", label: "Player Start", x: 0.5, y: 0.5,  role: "player" },
-      { id: "enemy_zone",   label: "Enemy Zone",   x: 0.8, y: 0.2,  role: "enemy" },
-      { id: "collectible",  label: "Collectibles", x: 0.3, y: 0.3,  role: "collectible" },
-      { id: "hazard",       label: "Hazard",       x: 0.5, y: 0.15, role: "hazard" },
-      { id: "goal",         label: "Goal",         x: 0.5, y: 0.05, role: "goal" },
+      { id: "player_start", label: "Player Start", x: 0.5,  y: 0.5,  role: "player" },
+      { id: "enemy_zone",   label: "Enemy Zone",   x: 0.8,  y: 0.2,  role: "enemy" },
+      { id: "collectible",  label: "Collectibles", x: 0.3,  y: 0.3,  role: "collectible" },
+      { id: "hazard",       label: "Hazard",       x: 0.5,  y: 0.15, role: "hazard" },
+      { id: "goal",         label: "Goal",         x: 0.5,  y: 0.05, role: "goal" },
     ],
     example: "A wizard fights enemies from all directions in an open room.",
   },
   {
-    key: "vertical_shooter",
+    key: "topdown_shooter",
     description:
-      "Vertically scrolling layout. Player moves up from the bottom, enemies descend from the top. " +
-      "Use when entities spawn from above and the player has no gravity.",
-    movement: "vertical",
+      "Vertically scrolling top-down shooter. Player at the bottom shoots upward at descending enemies. " +
+      "Use when enemies spawn from the top and the player moves freely across the screen.",
+    movement: "both",
     scrolling: true,
     spawnZones: [
-      { id: "player_start", label: "Player Start", x: 0.5, y: 0.9,  role: "player" },
-      { id: "enemy_zone",   label: "Enemy Spawn",  x: 0.5, y: 0.05, role: "enemy" },
-      { id: "collectible",  label: "Collectibles", x: 0.5, y: 0.5,  role: "collectible" },
-      { id: "hazard",       label: "Hazard",       x: 0.5, y: 0.3,  role: "hazard" },
+      { id: "player_start", label: "Player Start", x: 0.5,  y: 0.85, role: "player" },
+      { id: "enemy_zone",   label: "Enemy Spawn",  x: 0.5,  y: 0.05, role: "enemy" },
+      { id: "collectible",  label: "Collectibles", x: 0.5,  y: 0.5,  role: "collectible" },
+      { id: "hazard",       label: "Hazard",       x: 0.5,  y: 0.3,  role: "hazard" },
     ],
     example: "A spaceship shoots upward at descending alien waves.",
   },
   {
-    key: "single_screen_platformer",
+    key: "topdown_explorer",
     description:
-      "Fixed single screen with platforms and gravity. Player, enemies, and collectibles share one screen. " +
-      "Use when entities jump and have gravity but the scene is small enough for one screen.",
-    movement: "horizontal",
+      "Scrolling top-down world with a goal to reach. Player explores the map, avoids hazards, and reaches an exit. " +
+      "Use when the player navigates a larger space with a clear destination.",
+    movement: "both",
+    scrolling: true,
+    spawnZones: [
+      { id: "player_start", label: "Player Start", x: 0.1,  y: 0.5,  role: "player" },
+      { id: "enemy_zone",   label: "Enemy Zone",   x: 0.6,  y: 0.4,  role: "enemy" },
+      { id: "collectible",  label: "Collectibles", x: 0.4,  y: 0.3,  role: "collectible" },
+      { id: "hazard",       label: "Hazard",       x: 0.5,  y: 0.6,  role: "hazard" },
+      { id: "goal",         label: "Goal",         x: 0.9,  y: 0.5,  role: "goal" },
+    ],
+    example: "An adventurer navigates a dungeon map, avoids traps, and reaches the exit.",
+  },
+  {
+    key: "topdown_collect",
+    description:
+      "Fixed single-screen top-down view focused on collecting all items. " +
+      "Use when the win condition is picking up all collectibles while avoiding enemies or hazards.",
+    movement: "both",
     scrolling: false,
     spawnZones: [
-      { id: "player_start", label: "Player Start", x: 0.1, y: 0.85, role: "player" },
-      { id: "enemy_zone",   label: "Enemy Zone",   x: 0.8, y: 0.85, role: "enemy" },
-      { id: "collectible",  label: "Collectibles", x: 0.5, y: 0.4,  role: "collectible" },
-      { id: "floor",        label: "Floor",        x: 0.5, y: 1.0,  role: "static" },
-      { id: "platform",     label: "Platform",     x: 0.5, y: 0.55, role: "static" },
+      { id: "player_start", label: "Player Start", x: 0.5,  y: 0.5,  role: "player" },
+      { id: "collectible",  label: "Collectibles", x: 0.25, y: 0.25, role: "collectible" },
+      { id: "enemy_zone",   label: "Enemy Zone",   x: 0.75, y: 0.75, role: "enemy" },
+      { id: "hazard",       label: "Hazard",       x: 0.75, y: 0.25, role: "hazard" },
     ],
-    example: "A small enclosed level where a frog collects flies on platforms.",
+    example: "Pac-Man style: collect all pellets while avoiding ghosts.",
   },
 ];
 

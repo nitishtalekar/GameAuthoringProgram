@@ -3,7 +3,7 @@ import { buildGraph, runGraph } from "@/lib/graph";
 import { human, getLastMessageContent } from "@/utils/messages";
 import { pipeline } from "@/lib/pipeline/pipeline";
 import { pipelineAgents } from "@/lib/pipeline/pipeline_agents";
-import type { GameState } from "@/lib/gameState";
+import type { GameState, CombinedAttributes } from "@/lib/gameState";
 
 export const runtime = "nodejs";
 
@@ -85,10 +85,21 @@ export async function POST(req: NextRequest) {
     const raw = getLastMessageContent(finalState.messages);
     const parsed = parseJson<unknown>(raw, stepDef.agentKey);
 
+    // Steps 2 and 3 both write to "attributes" — merge into sub-fields
+    let outputValue: unknown = parsed;
+    if (stepDef.outputField === "attributes") {
+      const existing = (state.attributes ?? {}) as Partial<CombinedAttributes>;
+      if (stepDef.agentKey === "interactionAttributeSelector") {
+        outputValue = { ...existing, interaction: parsed };
+      } else if (stepDef.agentKey === "individualAttributeSelector") {
+        outputValue = { ...existing, individual: parsed };
+      }
+    }
+
     const updatedState: GameState = {
       ...state,
       completedSteps: [...(state.completedSteps ?? []), step],
-      [stepDef.outputField]: parsed,
+      [stepDef.outputField]: outputValue,
     };
 
     return NextResponse.json({ state: updatedState });

@@ -12,8 +12,8 @@ export const INDIVIDUAL_ATTRIBUTES: IndividualAttributeDefinition[] = [
   {
     key: "isStatic",
     description:
-      "The entity does not move and is not affected by gravity or physics forces. It forms part of the level geometry.",
-    example: "A wall, floor, or platform.",
+      "The entity does not move. It forms part of the level geometry (walls, barriers, obstacles).",
+    example: "A wall, barrier, or obstacle.",
   },
   {
     key: "isPlayer",
@@ -52,22 +52,16 @@ export const INDIVIDUAL_ATTRIBUTES: IndividualAttributeDefinition[] = [
     example: "A player character or enemy.",
   },
   {
-    key: "hasGravity",
-    description:
-      "The entity is pulled downward by gravity and will fall if unsupported.",
-    example: "A falling boulder or physics-driven character.",
-  },
-  {
-    key: "canJump",
-    description:
-      "The entity can leave the ground vertically under player or AI control.",
-    example: "A platformer hero or leaping enemy.",
-  },
-  {
     key: "isObject",
     description:
       "The entity is an inanimate object with no consciousness, agency, or autonomous behaviour. Use this to distinguish passive world objects from living or player-controlled entities.",
     example: "A chest, barrel, or door.",
+  },
+  {
+    key: "hasMovement",
+    description:
+      "The entity can move autonomously (patrol, chase, wander) without player input.",
+    example: "A patrolling guard or wandering creature.",
   },
 ];
 
