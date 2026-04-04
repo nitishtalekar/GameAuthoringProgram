@@ -1,3 +1,4 @@
+// PlayPage.tsx
 "use client";
 
 import { useState } from "react";
@@ -7,7 +8,6 @@ import { Box, Button, Stack, TextField, Typography } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import type { GameJSON } from "@/lib/gameState";
 
-// Load PhaserGame with no SSR — Phaser requires browser APIs
 const PhaserGame = dynamic(() => import("./PhaserGame"), { ssr: false });
 
 export default function PlayPage() {
@@ -19,6 +19,7 @@ export default function PlayPage() {
   function loadGame() {
     try {
       const parsed = JSON.parse(jsonInput) as GameJSON;
+
       if (
         !parsed.title ||
         !parsed.entities ||
@@ -29,6 +30,7 @@ export default function PlayPage() {
           "Invalid GameJSON — must have title, entities, interactionMatrix, and layout."
         );
       }
+
       setGameJSON(parsed);
       setError(null);
     } catch (e) {
@@ -49,6 +51,7 @@ export default function PlayPage() {
           >
             Editor
           </Button>
+
           <Typography variant="h4" fontWeight={600}>
             Game Player
           </Typography>
@@ -76,7 +79,11 @@ export default function PlayPage() {
           placeholder='{"title": "...", "entities": [...], "interactionMatrix": [...], "layout": {...}, ...}'
         />
 
-        <Button variant="contained" onClick={loadGame} disabled={!jsonInput.trim()}>
+        <Button
+          variant="contained"
+          onClick={loadGame}
+          disabled={!jsonInput.trim()}
+        >
           Load Game
         </Button>
 
@@ -99,15 +106,16 @@ export default function PlayPage() {
             <Typography variant="subtitle1" fontWeight={600}>
               {gameJSON.title}
             </Typography>
+
             <Typography variant="caption" color="text.secondary">
               WASD to move · R to restart
             </Typography>
+
             <Box
               sx={{
                 width: "100%",
                 display: "flex",
                 justifyContent: "center",
-                overflow: "hidden",
               }}
             >
               <PhaserGame gameJSON={gameJSON} />
