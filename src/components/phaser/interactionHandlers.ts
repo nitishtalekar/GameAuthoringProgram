@@ -129,11 +129,13 @@ export const INTERACTION_HANDLERS: Record<string, InteractionHandler> = {
   isActivatedBy: {
     key: "isActivatedBy",
     description:
-      "Source is activated when player has collected the activator (target). Sets alpha to 0.5.",
+      "Source is activated when player has collected the required item. Sets alpha to 0.5.",
     cooldownMs: 0,
-    handle: (srcSprite, _tgtSprite, _srcRT, tgtRT, scene) => {
-      const activatorId = tgtRT.cfg.id;
-      if (!scene.inventory.has(activatorId)) return;
+    handle: (srcSprite, _tgtSprite, _srcRT, _tgtRT, scene) => {
+      // requiredItem is set during scene setup from the interactionMatrix declaration
+      // (e.g. door isActivatedBy key). If absent, activate unconditionally on contact.
+      const requiredItem: string | undefined = srcSprite.getData("requiredItem");
+      if (requiredItem && !scene.inventory.has(requiredItem)) return;
       if (!srcSprite.getData("activated")) {
         srcSprite.setData("activated", true);
         srcSprite.setAlpha(0.5);

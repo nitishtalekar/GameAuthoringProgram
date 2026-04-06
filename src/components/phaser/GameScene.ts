@@ -152,12 +152,22 @@ export function buildScene(gameJSON: GameJSON) {
         this.spawnEntityAt(cfg, spawnX, spawnY);
       }
 
-      // Add colliders between all dynamic groups and static groups
-      for (const [, rt] of this.rt) {
+      // Add colliders between dynamic and static groups only when no interaction
+      // is already registered between them. Pairs with interactions (e.g. isDamagedBy,
+      // isCollectedBy) use physics.add.overlap instead — adding a collider on top
+      // would separate the bodies before the overlap callback fires.
+      for (const [id, rt] of this.rt) {
         if (rt.cfg.physics.isStatic) continue;
-        for (const [, otherRt] of this.rt) {
+        for (const [otherId, otherRt] of this.rt) {
           if (!otherRt.cfg.physics.isStatic) continue;
-          this.physics.add.collider(rt.group, otherRt.group);
+          const hasInteraction = interactionMatrix.some(
+            (e) =>
+              (e.source === id && e.target === otherId) ||
+              (e.source === otherId && e.target === id)
+          );
+          if (!hasInteraction) {
+            this.physics.add.collider(rt.group, otherRt.group);
+          }
         }
       }
     }
@@ -258,6 +268,35 @@ export function buildScene(gameJSON: GameJSON) {
       // For isBlockedBy, use a physics collider instead of overlap
       if (effect === "isBlockedBy") {
         this.physics.add.collider(srcRT.group, tgtRT.group);
+        return;
+      }
+
+      // For isActivatedBy where the target is an item (not the player):
+      // The item will be collected and removed, so overlapping with it won't work.
+      // Instead, store the required item id on the goal sprites and register the
+      // overlap between the goal and the player.
+      if (effect === "isActivatedBy" && tgtRT.cfg.role !== "player") {
+        srcRT.group.getChildren().forEach((s) => {
+          (s as Phaser.Physics.Arcade.Sprite).setData("requiredItem", targetId);
+        });
+        const playerRT = [...this.rt.values()].find(
+          (r) => r.cfg.role === "player"
+        );
+        if (playerRT) {
+          const playerKey = `${sourceId}|${playerRT.cfg.id}|isActivatedBy`;
+          if (!this.overlapsRegistered.has(playerKey)) {
+            this.overlapsRegistered.add(playerKey);
+            this.physics.add.overlap(srcRT.group, playerRT.group, (a, b) => {
+              this.handleInteraction(
+                a as Phaser.Physics.Arcade.Sprite,
+                srcRT,
+                b as Phaser.Physics.Arcade.Sprite,
+                playerRT,
+                "isActivatedBy"
+              );
+            });
+          }
+        }
         return;
       }
 

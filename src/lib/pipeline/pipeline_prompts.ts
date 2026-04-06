@@ -235,6 +235,14 @@ static:      speed=0,   hasMovement=false, size=64, health=0, maxCount=-1, spawn
 - This is a top-down game. There is no gravity, no jumping, and no platformer mechanics.
 - Assign each entity's role from its individualAttributes: isPlayer→player, isEnemy→enemy, isCollectible→collectible, isHazard→hazard, isStatic→static. If an entity has isActivatedBy pointing to the player, it is likely a goal.
 - interactionMatrix: convert the attributes.interaction map into a flat list of { source, target, effect } objects. "source" is the entity being affected, "target" is the entity causing the effect. Use entity ids (lower_snake_case).
+    Per-effect direction rules (STRICTLY follow these):
+    - isDamagedBy:   source = entity that takes damage,        target = entity that deals damage.          e.g. { source: "knight", target: "trap",    effect: "isDamagedBy" }
+    - isHealedBy:    source = entity that gains health,        target = entity that provides healing.      e.g. { source: "knight", target: "potion",  effect: "isHealedBy" }
+    - isCollectedBy: source = ITEM being picked up,            target = entity doing the collecting (player). e.g. { source: "key",    target: "knight",  effect: "isCollectedBy" }
+    - isActivatedBy: source = object being activated,          target = item/entity that activates it.     e.g. { source: "door",   target: "key",     effect: "isActivatedBy" }
+    - isDestroyedBy: source = entity that gets destroyed,      target = entity that destroys it.           e.g. { source: "enemy",  target: "bullet",  effect: "isDestroyedBy" }
+    - isBlockedBy:   source = entity that is blocked,          target = entity acting as the wall.         e.g. { source: "player", target: "wall",    effect: "isBlockedBy" }
+    - isSpawnedBy:   source = entity being spawned,            target = entity that triggers the spawn.    e.g. { source: "enemy",  target: "spawner", effect: "isSpawnedBy" }
 - layout.spawnPoints: assign one spawn point per entity. Use the layout recipe's spawnZones as a guide — match each entity's role to the closest zone and use its (x, y) coordinates. Every entity must have a spawn point.
 - health: entities with hasHealth get health ≥ 1. If hasHealth is absent and the entity is not a player, health = 0 (one-hit destroy).
 - For enemies with isDestroyedBy pointing to the player, increase speed slightly to add challenge.
